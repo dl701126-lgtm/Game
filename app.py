@@ -1078,9 +1078,7 @@ requestAnimationFrame(loop);
 
 components.html(
     game_html,
-    height=790,
-    scrolling=False
-)
+    height
 
 
 
