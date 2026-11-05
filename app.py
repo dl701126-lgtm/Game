@@ -4,276 +4,198 @@ import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="Night City Racing",
+    page_icon="🏎️",
     layout="wide"
 )
 
 st.markdown("""
 <style>
-.stApp {
-    background: #071522;
-}
-.block-container {
-    padding-top: 1rem;
-    max-width: 1200px;
-}
-h1 {
-    color: #eaf5ff;
-    text-align: center;
-}
+    .stApp {
+        background: #080d18;
+    }
+    h1 {
+        color: #ffffff;
+        text-align: center;
+    }
+    iframe {
+        border: none;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🌃 NIGHT CITY RACING")
+st.title("🏎️ NIGHT CITY RACING")
 
 game_html = r"""
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 * {
     box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 body {
     margin: 0;
-    background: #071522;
+    background: #080d18;
     color: white;
     font-family: Arial, sans-serif;
     overflow: hidden;
 }
 
 #game {
+    display: block;
     width: 100%;
-    max-width: 1100px;
+    max-width: 1000px;
     margin: auto;
-    position: relative;
-}
-
-canvas {
-    width: 100%;
-    display: block;
-    background: #071522;
-    border-radius: 12px;
-}
-
-.hud {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    font-weight: 900;
-    text-shadow: 0 2px 8px #000;
-}
-
-.score {
-    position: absolute;
-    top: 18px;
-    left: 22px;
-    font-size: 22px;
-}
-
-.score span {
-    display: block;
-    color: #ffbd22;
-    font-size: 42px;
-}
-
-.timer {
-    position: absolute;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    font-size: 18px;
-}
-
-.timer span {
-    display: block;
-    font-size: 48px;
-}
-
-.level {
-    position: absolute;
-    top: 22px;
-    right: 22px;
-    font-size: 20px;
-}
-
-.speed {
-    position: absolute;
-    right: 20px;
-    bottom: 20px;
-    border: 5px solid #ffffff55;
-    border-radius: 50%;
-    width: 115px;
-    height: 115px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #142d3b88;
-}
-
-.speed span {
-    font-size: 34px;
-}
-
-.boost {
-    position: absolute;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    font-size: 20px;
-}
-
-.boostbar {
-    display: flex;
-    gap: 5px;
-    margin-top: 8px;
-}
-
-.boostbar i {
-    width: 23px;
-    height: 10px;
-    background: #ffffff44;
-}
-
-.boostbar i.on {
-    background: #ffad18;
-}
-
-.controls {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    padding: 12px;
-}
-
-.controls button,
-#restart {
-    border: 1px solid #80b9d0;
-    background: #16384c;
-    color: white;
-    font-size: 25px;
-    font-weight: bold;
-    border-radius: 15px;
-    padding: 12px 35px;
+    background: #080d18;
     touch-action: none;
 }
 
-.controls button:active,
-#restart:active {
-    background: #ffad18;
-    color: #111;
+#panel {
+    max-width: 1000px;
+    margin: 8px auto;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.info {
+    background: #111d30;
+    border: 1px solid #29415f;
+    border-radius: 8px;
+    padding: 8px 14px;
+    min-width: 90px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.info span {
+    display: block;
+    color: #4deaff;
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 3px;
+}
+
+#controls {
+    max-width: 1000px;
+    margin: 12px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+button {
+    border: none;
+    border-radius: 12px;
+    padding: 14px 20px;
+    color: white;
+    font-size: 17px;
+    font-weight: bold;
+    background: #174a80;
+    min-width: 72px;
+    touch-action: none;
+}
+
+button:active {
+    background: #268bdc;
+    transform: scale(0.96);
+}
+
+#gas {
+    background: #087b4a;
+}
+
+#brake {
+    background: #a52b32;
+}
+
+#restart {
+    background: #7544a5;
 }
 
 #message {
-    position: absolute;
-    top: 43%;
-    width: 100%;
     text-align: center;
-    font-size: 42px;
-    font-weight: 900;
-    text-shadow: 0 3px 12px black;
-    display: none;
+    color: #ffe66d;
+    font-size: 18px;
+    font-weight: bold;
+    min-height: 24px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="game">
-
-    <canvas id="canvas" width="1000" height="620"></canvas>
-
-    <div class="hud">
-
-        <div class="score">
-            SCORE
-            <span id="score">0</span>
-        </div>
-
-        <div class="timer">
-            TIME LEFT
-            <span id="timer">60.0</span>
-        </div>
-
-        <div class="level">
-            LEVEL <span id="level">1</span>
-        </div>
-
-        <div class="speed">
-            SPEED
-            <span id="speed">120</span>
-            KM/H
-        </div>
-
-        <div class="boost">
-            BOOST
-            <div class="boostbar" id="boostbar">
-                <i class="on"></i>
-                <i class="on"></i>
-                <i class="on"></i>
-                <i class="on"></i>
-                <i class="on"></i>
-                <i></i>
-                <i></i>
-                <i></i>
-            </div>
-        </div>
-
-    </div>
-
-    <div id="message">LEVEL UP!</div>
-
+<div id="panel">
+    <div class="info">SCORE<span id="score">0</span></div>
+    <div class="info">TIME<span id="time">60</span></div>
+    <div class="info">LEVEL<span id="level">1</span></div>
+    <div class="info">SPEED<span id="speed">0 km/h</span></div>
 </div>
 
-<div class="controls">
-    <button id="left">◀ 左移</button>
-    <button id="right">右移 ▶</button>
-</div>
+<canvas id="game" width="1000" height="620"></canvas>
 
-<div style="text-align:center;padding-bottom:12px">
-    <button id="restart" onclick="restartGame()">
-        重新開始
-    </button>
+<div id="message">按住油門開始遊戲！</div>
+
+<div id="controls">
+    <button id="left">⬅ 左</button>
+    <button id="brake">煞車</button>
+    <button id="gas">油門</button>
+    <button id="right">右 ➡</button>
+    <button id="restart">重新開始</button>
 </div>
 
 <script>
-
-const canvas = document.getElementById("canvas");
+const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const W = canvas.width;
 const H = canvas.height;
 
 let score = 0;
-let level = 1;
 let timeLeft = 60;
-let speed = 120;
+let level = 1;
 
-let playerX = 0;
+let speed = 0;
+let maxSpeed = 220;
+let acceleration = 38;
+let brakePower = 100;
+let friction = 7;
+
+let playerX = W / 2;
 let roadScroll = 0;
-let frame = 0;
 
 let enemies = [];
-
+let frame = 0;
 let gameOver = false;
-let paused = false;
+let started = false;
 
 let lastTime = 0;
+let spawnTimer = 0;
 let messageTimer = 0;
 
 const keys = {
     left: false,
-    right: false
+    right: false,
+    gas: false,
+    brake: false
 };
 
-// ==========================
-// 道路設定：保持筆直
-// ==========================
+const enemyColors = [
+    "#e53935",
+    "#2979ff",
+    "#43a047",
+    "#ffca28",
+    "#8e24aa",
+    "#eeeeee"
+];
 
 function roadCenter(y) {
     return W / 2;
@@ -283,802 +205,519 @@ function roadWidth(y) {
     return 100 + (y / H) * 780;
 }
 
-// ==========================
-// 夜間城市背景
-// ==========================
+function updateHUD() {
+    document.getElementById("score").textContent = score;
+    document.getElementById("time").textContent =
+        Math.max(0, Math.ceil(timeLeft));
+    document.getElementById("level").textContent = level;
+    document.getElementById("speed").textContent =
+        Math.round(speed) + " km/h";
+}
 
 function drawBackground() {
-
     const sky = ctx.createLinearGradient(0, 0, 0, H);
-
-    sky.addColorStop(0, "#03101c");
-    sky.addColorStop(0.55, "#09283a");
-    sky.addColorStop(1, "#273d43");
+    sky.addColorStop(0, "#050a18");
+    sky.addColorStop(1, "#18233a");
 
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, W, H);
 
-    const glow = ctx.createRadialGradient(
-        500, 280, 10,
-        500, 280, 400
-    );
+    // 城市建築
+    for (let side = 0; side < 2; side++) {
+        for (let i = 0; i < 12; i++) {
+            let bw = 35 + (i % 3) * 18;
+            let bh = 160 + ((i * 47) % 190);
+            let x = side === 0
+                ? i * 48
+                : W - (i + 1) * 48;
 
-    glow.addColorStop(0, "#e7a66b33");
-    glow.addColorStop(1, "#07152200");
+            let y = H - bh;
 
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, W, H);
-
-    // 左右兩側大樓
-
-    for (let side of [-1, 1]) {
-
-        for (let i = 0; i < 10; i++) {
-
-            let bh = 180 + ((i * 73) % 220);
-            let bw = 45 + ((i * 19) % 45);
-
-            let x = side < 0
-                ? i * 58 - 15
-                : W - i * 58 - bw + 15;
-
-            let y = 90 + (i % 3) * 22;
-
-            let shade = 8 + (i % 4) * 4;
-
-            ctx.fillStyle =
-                `rgb(${shade},${25 + shade},${35 + shade})`;
+            ctx.fillStyle = i % 2 === 0
+                ? "#101c32"
+                : "#17243b";
 
             ctx.fillRect(x, y, bw, bh);
 
-            // 發光窗戶
-
-            for (let wy = y + 12; wy < y + bh - 8; wy += 20) {
-
-                for (let wx = x + 8; wx < x + bw - 5; wx += 16) {
-
-                    // 固定規律，避免每一幀閃爍
-                    let lit = ((wx + wy + i * 13) % 5) !== 0;
-
-                    if (lit) {
+            // 建築物窗戶
+            for (let wy = y + 15; wy < H - 10; wy += 25) {
+                for (let wx = x + 8; wx < x + bw - 5; wx += 17) {
+                    if ((Math.floor(wx + wy) % 4) !== 0) {
                         ctx.fillStyle =
-                            ((wx + wy) % 2 === 0)
-                            ? "#d9e6a877"
-                            : "#8bc4d655";
+                            (Math.floor(wx + wy) % 3 === 0)
+                            ? "#ffd76a"
+                            : "#58a9d8";
 
-                        ctx.fillRect(wx, wy, 7, 9);
+                        ctx.fillRect(wx, wy, 6, 9);
                     }
                 }
             }
         }
     }
 
-    // 遠方路燈
-
+    // 路燈
     for (let i = 0; i < 7; i++) {
+        let y = (i * 105 + roadScroll * 0.7) % H;
+        let scale = 0.35 + y / H * 0.65;
 
-        let y = 180 + i * 38;
+        for (let side of [-1, 1]) {
+            let x = W / 2 + side * (roadWidth(y) / 2 + 35 * scale);
 
-        let x1 = 250 - i * 22;
-        let x2 = 750 + i * 22;
-
-        for (let x of [x1, x2]) {
-
-            ctx.strokeStyle = "#627b7d";
-            ctx.lineWidth = 2 + i * 0.3;
+            ctx.strokeStyle = "#667b9d";
+            ctx.lineWidth = 4 * scale;
 
             ctx.beginPath();
             ctx.moveTo(x, y);
-            ctx.lineTo(x, y - 35 - i * 4);
+            ctx.lineTo(x, y - 70 * scale);
+            ctx.lineTo(x + side * 25 * scale, y - 70 * scale);
             ctx.stroke();
 
-            ctx.fillStyle = "#ffe6a0";
-            ctx.shadowColor = "#ffd879";
-            ctx.shadowBlur = 18;
-
-            ctx.fillRect(x - 5, y - 38 - i * 4, 10, 4);
-
-            ctx.shadowBlur = 0;
+            ctx.fillStyle = "#ffe9a0";
+            ctx.beginPath();
+            ctx.arc(
+                x + side * 25 * scale,
+                y - 70 * scale,
+                5 * scale,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
         }
     }
 }
 
-// ==========================
-// 筆直 3D 道路
-// ==========================
-
 function drawRoad() {
+    const topWidth = roadWidth(0);
+    const bottomWidth = roadWidth(H);
 
-    let leftTop =
-        roadCenter(0) - roadWidth(0) / 2;
-
-    let rightTop =
-        roadCenter(0) + roadWidth(0) / 2;
-
-    let leftBottom =
-        roadCenter(H) - roadWidth(H) / 2;
-
-    let rightBottom =
-        roadCenter(H) + roadWidth(H) / 2;
-
-    // 路面外側
-
-    ctx.fillStyle = "#263b3c";
-    ctx.fillRect(0, 300, W, H - 300);
-
-    // 道路
-
-    let road = ctx.createLinearGradient(0, 250, 0, H);
-
-    road.addColorStop(0, "#555b57");
-    road.addColorStop(1, "#77766b");
-
-    ctx.fillStyle = road;
+    ctx.fillStyle = "#252b36";
 
     ctx.beginPath();
-    ctx.moveTo(leftTop, 0);
-    ctx.lineTo(rightTop, 0);
-    ctx.lineTo(rightBottom, H);
-    ctx.lineTo(leftBottom, H);
+    ctx.moveTo(W / 2 - topWidth / 2, 0);
+    ctx.lineTo(W / 2 + topWidth / 2, 0);
+    ctx.lineTo(W / 2 + bottomWidth / 2, H);
+    ctx.lineTo(W / 2 - bottomWidth / 2, H);
     ctx.closePath();
     ctx.fill();
 
-    // 道路左右白線
-
-    ctx.strokeStyle = "#e8e8c9";
-    ctx.lineWidth = 4;
+    // 道路兩側邊線
+    ctx.strokeStyle = "#e8e8e8";
+    ctx.lineWidth = 8;
 
     ctx.beginPath();
+    ctx.moveTo(W / 2 - topWidth / 2, 0);
+    ctx.lineTo(W / 2 - bottomWidth / 2, H);
+    ctx.stroke();
 
-    ctx.moveTo(leftTop, 0);
-    ctx.lineTo(leftBottom, H);
-
-    ctx.moveTo(rightTop, 0);
-    ctx.lineTo(rightBottom, H);
-
+    ctx.beginPath();
+    ctx.moveTo(W / 2 + topWidth / 2, 0);
+    ctx.lineTo(W / 2 + bottomWidth / 2, H);
     ctx.stroke();
 
     // 車道虛線
-
-    for (let lane = 1; lane <= 2; lane++) {
-
-        for (let i = 0; i < 14; i++) {
-
-            let p = (
-                i / 14 + (roadScroll * 0.001) % 1
-            ) % 1;
-
-            let y = p * H;
-
-            let x =
-                roadCenter(y)
-                - roadWidth(y) / 2
-                + roadWidth(y) * lane / 3;
-
-            let lineH = 3 + p * 24;
-            let lineW = 1 + p * 5;
-
-            ctx.fillStyle = "#f2edcf";
-
-            ctx.fillRect(
-                x - lineW / 2,
-                y,
-                lineW,
-                lineH
-            );
-        }
-    }
-
-    // 路邊護欄
-
-    for (let side of [-1, 1]) {
-
-        ctx.strokeStyle = "#a9b6aa";
-        ctx.lineWidth = 3;
-
-        ctx.beginPath();
-
-        for (let y = 230; y < H; y += 8) {
-
-            let x =
-                roadCenter(y)
-                + side * (roadWidth(y) / 2 + 12);
-
-            if (y === 230) {
-                ctx.moveTo(x, y);
-            } else {
-                ctx.lineTo(x, y);
-            }
-        }
-
-        ctx.stroke();
+    for (let lane = -1; lane <= 1; lane++) {
+        if (lane === 0) continue;
 
         for (let i = 0; i < 12; i++) {
+            let y = (i * 75 + roadScroll) % H;
+            let width = roadWidth(y);
+            let x = W / 2 + lane * width / 3;
 
-            let y = 250 + i * 35;
-
-            let x =
-                roadCenter(y)
-                + side * (roadWidth(y) / 2 + 12);
-
-            ctx.fillStyle = "#778984";
-            ctx.fillRect(x - 2, y, 5, 18);
+            ctx.fillStyle = "#f6f0ce";
+            ctx.fillRect(x - 4, y, 8, 35 + y / H * 25);
         }
     }
-
-    // 路面反光
-
-    let light = ctx.createLinearGradient(
-        300, 250, 700, H
-    );
-
-    light.addColorStop(0, "#fff3c000");
-    light.addColorStop(0.5, "#fff3c022");
-    light.addColorStop(1, "#fff3c000");
-
-    ctx.fillStyle = light;
-    ctx.fillRect(0, 250, W, H - 250);
 }
 
-// ==========================
-// 立體車輛繪製
-// ==========================
-
 function drawCar(x, y, w, h, color, isPlayer = false) {
-
     ctx.save();
     ctx.translate(x, y);
 
     // 車底陰影
-
-    ctx.fillStyle = "#0009";
-
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
     ctx.beginPath();
-
-    ctx.ellipse(
-        0,
-        h * 0.48,
-        w * 0.62,
-        h * 0.12,
-        0,
-        0,
-        Math.PI * 2
-    );
-
+    ctx.ellipse(0, h * 0.43, w * 0.58, h * 0.12, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // 尾燈光暈
-
-    if (isPlayer) {
-
-        ctx.shadowColor = "#ff4b32";
-        ctx.shadowBlur = 24;
-
-        ctx.fillStyle = "#ff4b3233";
-
-        ctx.fillRect(
-            -w * 0.42,
-            h * 0.22,
-            w * 0.84,
-            h * 0.3
-        );
-
-        ctx.shadowBlur = 0;
-    }
-
     // 輪胎
-
-    ctx.fillStyle = "#090d12";
-
-    ctx.fillRect(
-        -w * 0.52,
-        -h * 0.05,
-        w * 0.15,
-        h * 0.38
-    );
-
-    ctx.fillRect(
-        w * 0.37,
-        -h * 0.05,
-        w * 0.15,
-        h * 0.38
-    );
+    ctx.fillStyle = "#080808";
+    ctx.fillRect(-w * 0.53, -h * 0.25, w * 0.19, h * 0.42);
+    ctx.fillRect(w * 0.34, -h * 0.25, w * 0.19, h * 0.42);
+    ctx.fillRect(-w * 0.53, h * 0.25, w * 0.19, h * 0.25);
+    ctx.fillRect(w * 0.34, h * 0.25, w * 0.19, h * 0.25);
 
     // 車身漸層
-
-    let body = ctx.createLinearGradient(
-        -w / 2, 0,
-        w / 2, 0
-    );
-
-    body.addColorStop(0, "#56646a");
+    let body = ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
+    body.addColorStop(0, "#222");
     body.addColorStop(0.18, color);
-    body.addColorStop(0.5, "#f5f0ce");
+    body.addColorStop(0.5, color);
     body.addColorStop(0.82, color);
-    body.addColorStop(1, "#3b464c");
+    body.addColorStop(1, "#222");
 
     ctx.fillStyle = body;
 
     ctx.beginPath();
-
-    ctx.moveTo(-w * 0.43, h * 0.42);
-    ctx.lineTo(-w * 0.48, h * 0.02);
-    ctx.lineTo(-w * 0.31, -h * 0.30);
-    ctx.lineTo(-w * 0.19, -h * 0.43);
-    ctx.lineTo(w * 0.19, -h * 0.43);
-    ctx.lineTo(w * 0.31, -h * 0.30);
-    ctx.lineTo(w * 0.48, h * 0.02);
-    ctx.lineTo(w * 0.43, h * 0.42);
-
+    ctx.moveTo(-w * 0.42, -h * 0.48);
+    ctx.lineTo(w * 0.42, -h * 0.48);
+    ctx.lineTo(w * 0.5, -h * 0.2);
+    ctx.lineTo(w * 0.48, h * 0.4);
+    ctx.lineTo(w * 0.35, h * 0.5);
+    ctx.lineTo(-w * 0.35, h * 0.5);
+    ctx.lineTo(-w * 0.48, h * 0.4);
+    ctx.lineTo(-w * 0.5, -h * 0.2);
     ctx.closePath();
     ctx.fill();
 
-    // 後車窗
-
-    let glass = ctx.createLinearGradient(
-        0, -h * 0.4,
-        0, h * 0.05
-    );
-
-    glass.addColorStop(0, "#172c39");
-    glass.addColorStop(1, "#07131d");
-
-    ctx.fillStyle = glass;
-
+    // 車頂玻璃
+    ctx.fillStyle = "#101d2c";
     ctx.beginPath();
-
-    ctx.moveTo(-w * 0.29, -h * 0.29);
-    ctx.lineTo(-w * 0.17, -h * 0.39);
-    ctx.lineTo(w * 0.17, -h * 0.39);
-    ctx.lineTo(w * 0.29, -h * 0.29);
-    ctx.lineTo(w * 0.34, -h * 0.04);
-    ctx.lineTo(-w * 0.34, -h * 0.04);
-
+    ctx.moveTo(-w * 0.3, -h * 0.28);
+    ctx.lineTo(w * 0.3, -h * 0.28);
+    ctx.lineTo(w * 0.34, h * 0.08);
+    ctx.lineTo(-w * 0.34, h * 0.08);
     ctx.closePath();
     ctx.fill();
 
-    // 後車廂
+    // 後擋風玻璃反光
+    ctx.fillStyle = "rgba(100,190,230,0.35)";
+    ctx.fillRect(-w * 0.25, -h * 0.24, w * 0.5, h * 0.12);
 
-    ctx.fillStyle = "#202c32";
-
-    ctx.fillRect(
-        -w * 0.38,
-        h * 0.06,
-        w * 0.76,
-        h * 0.12
-    );
-
-    // 尾燈
-
-    ctx.shadowColor = "#ff2929";
-    ctx.shadowBlur = isPlayer ? 22 : 12;
-
-    ctx.fillStyle = "#ff3b38";
-
-    ctx.fillRect(
-        -w * 0.40,
-        h * 0.19,
-        w * 0.25,
-        h * 0.09
-    );
-
-    ctx.fillRect(
-        w * 0.15,
-        h * 0.19,
-        w * 0.25,
-        h * 0.09
-    );
-
-    ctx.shadowBlur = 0;
+    // 車尾燈
+    ctx.fillStyle = "#ff172e";
+    ctx.fillRect(-w * 0.39, h * 0.29, w * 0.2, h * 0.08);
+    ctx.fillRect(w * 0.19, h * 0.29, w * 0.2, h * 0.08);
 
     // 車牌
+    ctx.fillStyle = "#dce7ed";
+    ctx.fillRect(-w * 0.14, h * 0.37, w * 0.28, h * 0.07);
 
-    ctx.fillStyle = "#c9c8b4";
-
-    ctx.fillRect(
-        -w * 0.12,
-        h * 0.22,
-        w * 0.24,
-        h * 0.07
-    );
-
-    ctx.fillStyle = "#26343a";
-
-    ctx.fillRect(
-        -w * 0.09,
-        h * 0.235,
-        w * 0.18,
-        h * 0.035
-    );
-
-    // 保險桿
-
-    ctx.fillStyle = "#313c40";
-
-    ctx.fillRect(
-        -w * 0.42,
-        h * 0.34,
-        w * 0.84,
-        h * 0.07
-    );
-
-    // 車身反光
-
-    ctx.strokeStyle = "#fff5c988";
-    ctx.lineWidth = 2;
-
-    ctx.beginPath();
-
-    ctx.moveTo(-w * 0.43, h * 0.04);
-    ctx.lineTo(-w * 0.36, h * 0.27);
-
-    ctx.moveTo(w * 0.43, h * 0.04);
-    ctx.lineTo(w * 0.36, h * 0.27);
-
-    ctx.stroke();
+    if (isPlayer) {
+        ctx.shadowColor = "#ff263d";
+        ctx.shadowBlur = 15;
+        ctx.fillStyle = "rgba(255,40,60,0.25)";
+        ctx.fillRect(-w * 0.4, h * 0.31, w * 0.8, h * 0.05);
+    }
 
     ctx.restore();
 }
 
-// ==========================
-// 敵人車輛
-// ==========================
+function drawPlayer() {
+    drawCar(playerX, H - 145, 190, 245, "#e51d35", true);
+}
 
 function spawnEnemy() {
-
     const lanes = [-0.65, 0, 0.65];
-
-    let lane = lanes[
-        Math.floor(Math.random() * lanes.length)
-    ];
+    const lane = lanes[Math.floor(Math.random() * lanes.length)];
 
     enemies.push({
         lane: lane,
-        z: 0.05,
-        color: [
-            "#b7c6c5",
-            "#b94d42",
-            "#343f50",
-            "#d0c5a1"
-        ][Math.floor(Math.random() * 4)]
+        z: 0.03,
+        color: enemyColors[
+            Math.floor(Math.random() * enemyColors.length)
+        ]
     });
 }
-
-// 敵人車輛與玩家車輛使用完全相同的尺寸
 
 function drawEnemies() {
-
     for (let e of enemies) {
+        let y = e.z * H;
+        let width = roadWidth(y);
+        let x = W / 2 + e.lane * width / 2.7;
 
-        let y = 120 + e.z * 360;
+        let scale = 0.25 + e.z * 0.65;
 
-        let center = roadCenter(y);
+        let carW = 135 * scale;
+        let carH = 175 * scale;
 
-        let x =
-            center + e.lane * (roadWidth(y) * 0.38);
-
-        drawCar(
-            x,
-            y,
-            190,
-            245,
-            e.color,
-            false
-        );
+        drawCar(x, y, carW, carH, e.color, false);
     }
 }
 
-function updateEnemies() {
+function updateEnemies(dt) {
+    spawnTimer += dt;
 
-    for (let e of enemies) {
-        e.z += 0.0035 + level * 0.00045;
-    }
+    let spawnInterval = Math.max(650, 1500 - level * 55);
 
-    enemies = enemies.filter(e => {
-
-        if (e.z > 1.1) {
-            score += 10;
-            return false;
-        }
-
-        return true;
-    });
-
-    if (frame % Math.max(35, 100 - level * 8) === 0) {
+    if (spawnTimer > spawnInterval) {
         spawnEnemy();
+        spawnTimer = 0;
     }
-}
 
-// ==========================
-// 玩家車輛
-// ==========================
-
-function drawPlayer() {
-
-    let y = H - 115;
-
-    let x = W / 2 + playerX * 270;
-
-    drawCar(
-        x,
-        y,
-        190,
-        245,
-        "#e9e9d0",
-        true
-    );
-}
-
-// ==========================
-// 碰撞判定
-// ==========================
-
-function checkCollision() {
+    let movement = 0.2 + speed / 120;
 
     for (let e of enemies) {
+        e.z += (
+            0.00018 +
+            level * 0.000025
+        ) * movement * dt;
+    }
 
-        if (e.z > 0.78) {
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        let e = enemies[i];
 
-            let enemyY = 120 + e.z * 360;
+        if (e.z > 1.05) {
+            enemies.splice(i, 1);
+            score += 10;
 
-            let enemyX =
-                roadCenter(enemyY)
-                + e.lane * (roadWidth(enemyY) * 0.38);
+            let newLevel = Math.floor(score / 100) + 1;
 
-            let playerScreenX =
-                W / 2 + playerX * 270;
+            if (newLevel > level) {
+                level = newLevel;
+                document.getElementById("message").textContent =
+                    "LEVEL UP! 第 " + level + " 關！";
 
-            if (Math.abs(enemyX - playerScreenX) < 145) {
-
-                gameOver = true;
-
-                document.getElementById("message").innerText =
-                    "撞到車輛！ GAME OVER";
-
-                document.getElementById("message").style.display =
-                    "block";
+                messageTimer = 120;
             }
         }
     }
 }
 
-// ==========================
-// 更新介面
-// ==========================
+function checkCollision() {
+    for (let e of enemies) {
+        if (e.z > 0.72 && e.z < 1.02) {
+            let y = e.z * H;
+            let x = W / 2 + e.lane * roadWidth(y) / 2.7;
 
-function updateHUD() {
-
-    document.getElementById("score").innerText = score;
-    document.getElementById("level").innerText = level;
-
-    document.getElementById("timer").innerText =
-        Math.max(0, timeLeft).toFixed(1);
-
-    document.getElementById("speed").innerText = speed;
-
-    let bars = document.querySelectorAll(".boostbar i");
-
-    bars.forEach((b, i) => {
-        b.classList.toggle("on", i < 5);
-    });
+            if (
+                Math.abs(x - playerX) < 120 &&
+                Math.abs(y - (H - 145)) < 100
+            ) {
+                gameOver = true;
+                document.getElementById("message").textContent =
+                    "💥 GAME OVER！按重新開始再玩一次";
+                return;
+            }
+        }
+    }
 }
 
-// ==========================
-// 遊戲更新
-// ==========================
+function updatePlayer(dt) {
+    const seconds = dt / 1000;
 
-function update(dt) {
+    if (keys.gas) {
+        speed += acceleration * seconds;
+        started = true;
+    } else if (keys.brake) {
+        speed -= brakePower * seconds;
+    } else {
+        speed -= friction * seconds;
+    }
 
-    if (gameOver || paused) return;
-
-    frame++;
-
-    roadScroll += speed;
-
-    timeLeft -= dt / 1000;
-
-    // 玩家左右移動
+    speed = Math.max(0, Math.min(maxSpeed + (level - 1) * 10, speed));
 
     if (keys.left) {
-        playerX -= 0.035;
+        playerX -= 420 * seconds;
     }
 
     if (keys.right) {
-        playerX += 0.035;
+        playerX += 420 * seconds;
     }
 
-    playerX = Math.max(
-        -1,
-        Math.min(1, playerX)
-    );
+    playerX = Math.max(120, Math.min(W - 120, playerX));
 
-    // 隨關卡增加速度
+    roadScroll += speed * seconds * 1.5;
+}
 
-    speed = 120 + (level - 1) * 12;
+function endGame() {
+    gameOver = true;
+    document.getElementById("message").textContent =
+        "⏰ 時間到！最終分數：" + score;
+}
 
-    updateEnemies();
+function update(dt) {
+    if (gameOver) return;
 
-    checkCollision();
+    if (started) {
+        timeLeft -= dt / 1000;
 
-    // 每 100 分升一級
-
-    let newLevel = Math.floor(score / 100) + 1;
-
-    if (newLevel > level) {
-
-        level = newLevel;
-
-        messageTimer = 100;
-
-        document.getElementById("message").innerText =
-            "LEVEL " + level + "!";
-
-        document.getElementById("message").style.display =
-            "block";
-    }
-
-    if (messageTimer > 0) {
-
-        messageTimer--;
-
-        if (messageTimer === 0) {
-            document.getElementById("message").style.display =
-                "none";
+        if (timeLeft <= 0) {
+            timeLeft = 0;
+            endGame();
+            return;
         }
     }
 
-    // 時間結束
+    updatePlayer(dt);
+    updateEnemies(dt);
+    checkCollision();
 
-    if (timeLeft <= 0) {
-
-        timeLeft = 0;
-        gameOver = true;
-
-        document.getElementById("message").innerText =
-            "時間到！ GAME OVER";
-
-        document.getElementById("message").style.display =
-            "block";
+    if (messageTimer > 0) {
+        messageTimer--;
+    } else if (gameOver === false) {
+        document.getElementById("message").textContent =
+            started ? "小心其他車輛！" : "按住油門開始遊戲！";
     }
 
     updateHUD();
 }
 
-// ==========================
-// 畫面繪製
-// ==========================
-
 function draw() {
-
     drawBackground();
-
     drawRoad();
-
     drawEnemies();
-
     drawPlayer();
+
+    if (gameOver) {
+        ctx.fillStyle = "rgba(0,0,0,0.65)";
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = "#ffdf65";
+        ctx.font = "bold 54px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", W / 2, H / 2);
+
+        ctx.font = "bold 28px Arial";
+        ctx.fillText("SCORE: " + score, W / 2, H / 2 + 55);
+    }
 }
 
-// ==========================
-// 遊戲主迴圈
-// ==========================
-
-function loop(timestamp) {
-
-    let dt = lastTime === 0
-        ? 16
-        : Math.min(timestamp - lastTime, 50);
-
+function gameLoop(timestamp) {
+    let dt = lastTime ? timestamp - lastTime : 16.67;
     lastTime = timestamp;
 
-    update(dt);
+    dt = Math.min(dt, 50);
 
+    update(dt);
     draw();
 
-    requestAnimationFrame(loop);
+    requestAnimationFrame(gameLoop);
 }
 
-// ==========================
-// 重新開始
-// ==========================
-
-function restartGame() {
-
+function resetGame() {
     score = 0;
-    level = 1;
     timeLeft = 60;
-    speed = 120;
+    level = 1;
 
-    playerX = 0;
+    speed = 0;
+    playerX = W / 2;
     roadScroll = 0;
-    frame = 0;
 
     enemies = [];
+    frame = 0;
+    spawnTimer = 0;
+    messageTimer = 0;
 
     gameOver = false;
-    paused = false;
-
-    messageTimer = 0;
+    started = false;
 
     keys.left = false;
     keys.right = false;
+    keys.gas = false;
+    keys.brake = false;
 
-    document.getElementById("message").style.display =
-        "none";
+    document.getElementById("message").textContent =
+        "按住油門開始遊戲！";
 
     updateHUD();
 }
 
-// ==========================
-// 鍵盤控制
-// ==========================
+// 按鈕控制
+function bindButton(id, key) {
+    const button = document.getElementById(id);
 
-document.addEventListener("keydown", e => {
-
-    if (e.key === "ArrowLeft" || e.key === "a") {
-        keys.left = true;
-    }
-
-    if (e.key === "ArrowRight" || e.key === "d") {
-        keys.right = true;
-    }
-});
-
-document.addEventListener("keyup", e => {
-
-    if (e.key === "ArrowLeft" || e.key === "a") {
-        keys.left = false;
-    }
-
-    if (e.key === "ArrowRight" || e.key === "d") {
-        keys.right = false;
-    }
-});
-
-// ==========================
-// 手機及平板按鈕
-// ==========================
-
-function holdButton(id, direction) {
-
-    const btn = document.getElementById(id);
-
-    btn.addEventListener("pointerdown", e => {
-
+    button.addEventListener("pointerdown", function(e) {
         e.preventDefault();
-
-        keys[direction] = true;
+        keys[key] = true;
+        button.setPointerCapture(e.pointerId);
     });
 
-    [
-        "pointerup",
-        "pointerleave",
-        "pointercancel"
-    ].forEach(event => {
+    button.addEventListener("pointerup", function(e) {
+        e.preventDefault();
+        keys[key] = false;
+    });
 
-        btn.addEventListener(event, () => {
-            keys[direction] = false;
-        });
+    button.addEventListener("pointercancel", function() {
+        keys[key] = false;
+    });
+
+    button.addEventListener("lostpointercapture", function() {
+        keys[key] = false;
     });
 }
 
-holdButton("left", "left");
-holdButton("right", "right");
+bindButton("left", "left");
+bindButton("right", "right");
+bindButton("gas", "gas");
+bindButton("brake", "brake");
 
-// 開始遊戲
+document.getElementById("restart").addEventListener(
+    "click",
+    resetGame
+);
+
+// 鍵盤控制
+document.addEventListener("keydown", function(e) {
+    if (
+        ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " "]
+        .includes(e.key)
+    ) {
+        e.preventDefault();
+    }
+
+    if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") {
+        keys.left = true;
+    }
+
+    if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") {
+        keys.right = true;
+    }
+
+    if (
+        e.key === "ArrowUp" ||
+        e.key.toLowerCase() === "w" ||
+        e.key === " "
+    ) {
+        keys.gas = true;
+    }
+
+    if (
+        e.key === "ArrowDown" ||
+        e.key.toLowerCase() === "s"
+    ) {
+        keys.brake = true;
+    }
+});
+
+document.addEventListener("keyup", function(e) {
+    if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") {
+        keys.left = false;
+    }
+
+    if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") {
+        keys.right = false;
+    }
+
+    if (
+        e.key === "ArrowUp" ||
+        e.key.toLowerCase() === "w" ||
+        e.key === " "
+    ) {
+        keys.gas = false;
+    }
+
+    if (
+        e.key === "ArrowDown" ||
+        e.key.toLowerCase() === "s"
+    ) {
+        keys.brake = false;
+    }
+});
 
 updateHUD();
-
-requestAnimationFrame(loop);
+requestAnimationFrame(gameLoop);
 
 </script>
 </body>
 </html>
 """
 
+# 這裡是 Streamlit 顯示遊戲的地方
 components.html(
     game_html,
-    height
+    height=850,
+    scrolling=False
+)
+
 
 
 
